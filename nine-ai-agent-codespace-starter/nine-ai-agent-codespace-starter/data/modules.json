@@ -1,0 +1,79 @@
+[
+  {
+    "id": "WI-MATHE2",
+    "name": "Mathematik II",
+    "category": "Pflichtmodul",
+    "faculty": "Fakultät 13",
+    "ects": 5,
+    "recommendedSemester": 2,
+    "requires": ["WI-MATHE1"],
+    "priority": "hoch",
+    "moodleHint": "Moodle-Kurs über Fakultät 13 suchen: Mathematik II"
+  },
+  {
+    "id": "WI-TM",
+    "name": "Technische Mechanik",
+    "category": "Pflichtmodul",
+    "faculty": "Fakultät 03",
+    "ects": 5,
+    "recommendedSemester": 2,
+    "requires": [],
+    "priority": "hoch",
+    "moodleHint": "NINE-Kurseintrag prüfen und Moodle-Kurs der Dozentin/des Dozenten öffnen"
+  },
+  {
+    "id": "WI-PM",
+    "name": "Produktionsmanagement",
+    "category": "Pflichtmodul",
+    "faculty": "Fakultät 09",
+    "ects": 5,
+    "recommendedSemester": 3,
+    "requires": [],
+    "priority": "mittel",
+    "moodleHint": "Moodle-Kurs Produktionsmanagement suchen"
+  },
+  {
+    "id": "WI-STAT",
+    "name": "Statistik",
+    "category": "Pflichtmodul",
+    "faculty": "Fakultät 13",
+    "ects": 5,
+    "recommendedSemester": 3,
+    "requires": ["WI-MATHE1"],
+    "priority": "hoch",
+    "moodleHint": "Fakultät-13-Angebot Statistik prüfen"
+  },
+  {
+    "id": "WI-INFO",
+    "name": "Wirtschaftsinformatik",
+    "category": "Pflichtmodul",
+    "faculty": "Fakultät 07",
+    "ects": 5,
+    "recommendedSemester": 3,
+    "requires": [],
+    "priority": "mittel",
+    "moodleHint": "NINE- und Moodle-Eintrag Wirtschaftsinformatik prüfen"
+  },
+  {
+    "id": "WI-ENGLISCH",
+    "name": "Englisch",
+    "category": "Studienbegleitendes Pflichtfach",
+    "faculty": "Fakultät 13",
+    "ects": 2,
+    "recommendedSemester": 3,
+    "requires": [],
+    "priority": "mittel",
+    "moodleHint": "Fakultät-13-Sprachenangebot und Einschreibung prüfen"
+  },
+  {
+    "id": "WI-ELEKTRO",
+    "name": "Elektrotechnik",
+    "category": "Pflichtmodul",
+    "faculty": "Fakultät 04",
+    "ects": 5,
+    "recommendedSemester": 3,
+    "requires": [],
+    "priority": "mittel",
+    "moodleHint": "NINE-Eintrag Elektrotechnik prüfen"
+  }
+]

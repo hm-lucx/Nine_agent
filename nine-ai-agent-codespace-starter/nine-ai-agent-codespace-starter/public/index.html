@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="de">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>NINE AI Agent Demo</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #f5f7fb;
+        color: #0f172a;
+      }
+      header {
+        background: #172554;
+        color: white;
+        padding: 32px;
+      }
+      main {
+        max-width: 1100px;
+        margin: 0 auto;
+        padding: 24px;
+      }
+      section, .card {
+        background: white;
+        border-radius: 16px;
+        padding: 20px;
+        margin: 16px 0;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+      }
+      label {
+        display: block;
+        font-weight: 700;
+        margin-top: 12px;
+      }
+      input, textarea, button {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 12px;
+        border: 1px solid #cbd5e1;
+        border-radius: 10px;
+        margin-top: 6px;
+        font-size: 16px;
+      }
+      button {
+        margin-top: 18px;
+        background: #172554;
+        color: white;
+        cursor: pointer;
+        border: none;
+        font-weight: 700;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 12px;
+      }
+      th, td {
+        border-bottom: 1px solid #e2e8f0;
+        text-align: left;
+        padding: 10px;
+      }
+      .warning {
+        border-left: 6px solid #f97316;
+      }
+      .success {
+        border-left: 6px solid #16a34a;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>KI-Agent zur Optimierung von NINE</h1>
+      <p>Demo-MVP für intelligente Studien- und Stundenplanung.</p>
+    </header>
+
+    <main>
+      <section>
+        <h2>1. Eingabe</h2>
+        <p>Gib ein Beispielprofil ein. Die Demo nutzt Mock-Daten und prüft daraus Module, ECTS und Termine.</p>
+
+        <label for="passed">Bestandene Module als IDs, getrennt durch Komma</label>
+        <input id="passed" value="WI-MATHE1" />
+
+        <label for="ects">Gewünschte ECTS im kommenden Semester</label>
+        <input id="ects" type="number" value="25" />
+
+        <label for="blocked">Gesperrte Zeit optional als JSON</label>
+        <textarea id="blocked" rows="4">[]</textarea>
+
+        <button onclick="generatePlan()">Semesterplan erstellen</button>
+      </section>
+
+      <section>
+        <h2>2. Ergebnis</h2>
+        <div id="output">Noch kein Plan erstellt.</div>
+      </section>
+    </main>
+
+    <script>
+      async function generatePlan() {
+        const passedModules = document.getElementById('passed').value.split(',').map((x) => x.trim()).filter(Boolean);
+        const targetEcts = Number(document.getElementById('ects').value || 25);
+        const blockedTimes = JSON.parse(document.getElementById('blocked').value || '[]');
+
+        const response = await fetch('/api/generate-plan', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ passedModules, targetEcts, blockedTimes })
+        });
+
+        const data = await response.json();
+        renderResult(data);
+      }
+
+      function renderResult(data) {
+        const output = document.getElementById('output');
+
+        const modules = data.selectedModules.map((module) => `
+          <tr>
+            <td>${module.name}</td>
+            <td>${module.category}</td>
+            <td>${module.faculty}</td>
+            <td>${module.ects}</td>
+            <td>${module.moodleHint}</td>
+          </tr>
+        `).join('');
+
+        const timetable = data.timetable.map((event) => `
+          <tr>
+            <td>${event.day}</td>
+            <td>${event.start}–${event.end}</td>
+            <td>${event.title}</td>
+            <td>${event.room}</td>
+            <td>${event.source}</td>
+          </tr>
+        `).join('');
+
+        const conflicts = data.conflicts.length
+          ? data.conflicts.map((conflict) => `<div class="card warning"><strong>${conflict.type}</strong><br>${conflict.hint}</div>`).join('')
+          : '<div class="card success"><strong>Keine Überschneidungen erkannt.</strong></div>';
+
+        const reasoning = data.reasoning.map((item) => `<li>${item}</li>`).join('');
+
+        output.innerHTML = `
+          <div class="grid">
+            <div class="card"><strong>Empfohlene ECTS:</strong><br>${data.ectsSum}</div>
+            <div class="card"><strong>Anzahl Module:</strong><br>${data.selectedModules.length}</div>
+            <div class="card"><strong>Konflikte:</strong><br>${data.conflicts.length}</div>
+          </div>
+
+          <h3>Empfohlene Module</h3>
+          <table>
+            <tr><th>Modul</th><th>Art</th><th>Fakultät</th><th>ECTS</th><th>Hinweis</th></tr>
+            ${modules}
+          </table>
+
+          <h3>Stundenplan</h3>
+          <table>
+            <tr><th>Tag</th><th>Zeit</th><th>Termin</th><th>Raum</th><th>Quelle</th></tr>
+            ${timetable}
+          </table>
+
+          <h3>Konfliktprüfung</h3>
+          ${conflicts}
+
+          <h3>Begründung des Agenten</h3>
+          <ul>${reasoning}</ul>
+        `;
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,65 @@
+[
+  {
+    "moduleId": "WI-MATHE2",
+    "title": "Mathematik II",
+    "day": "Dienstag",
+    "start": "08:00",
+    "end": "10:00",
+    "room": "F13 Beispielraum",
+    "source": "Mock-Daten Fakultät 13"
+  },
+  {
+    "moduleId": "WI-STAT",
+    "title": "Statistik",
+    "day": "Donnerstag",
+    "start": "12:00",
+    "end": "14:00",
+    "room": "F13 Beispielraum",
+    "source": "Mock-Daten Fakultät 13"
+  },
+  {
+    "moduleId": "WI-ENGLISCH",
+    "title": "Englisch",
+    "day": "Freitag",
+    "start": "10:00",
+    "end": "12:00",
+    "room": "F13 Sprachraum",
+    "source": "Mock-Daten Fakultät 13"
+  },
+  {
+    "moduleId": "WI-TM",
+    "title": "Technische Mechanik",
+    "day": "Mittwoch",
+    "start": "08:00",
+    "end": "10:00",
+    "room": "HM Beispielraum",
+    "source": "Mock-Daten NINE"
+  },
+  {
+    "moduleId": "WI-PM",
+    "title": "Produktionsmanagement",
+    "day": "Montag",
+    "start": "12:00",
+    "end": "14:00",
+    "room": "HM Beispielraum",
+    "source": "Mock-Daten NINE"
+  },
+  {
+    "moduleId": "WI-INFO",
+    "title": "Wirtschaftsinformatik",
+    "day": "Donnerstag",
+    "start": "16:00",
+    "end": "18:00",
+    "room": "HM Beispielraum",
+    "source": "Mock-Daten NINE"
+  },
+  {
+    "moduleId": "WI-ELEKTRO",
+    "title": "Elektrotechnik",
+    "day": "Mittwoch",
+    "start": "14:00",
+    "end": "16:00",
+    "room": "HM Beispielraum",
+    "source": "Mock-Daten NINE"
+  }
+]
