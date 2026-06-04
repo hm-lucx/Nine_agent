@@ -204,10 +204,10 @@ src/
 ### Sprint 1 – abgeschlossen
 Lauffähige Grundstruktur. Knowledge-Dateien eingebunden. Alle 10 Bereiche sichtbar.
 
-### Sprint 2 – zusammengeführt mit Sprint 3
+### Sprint 2 – zusammengeführt mit Sprint 
 Grundlegende Regellogik (ruleEngine.ts) implementiert.
 
-### Sprint 3 – abgeschlossen
+### Sprint 3 – laufend
 Dynamischer State (AppContext + localStorage). Planungsparameter-Formular.
 PRIMUSS-Import-Prototyp. NINE-API-Service mit Mock. Noten + Durchschnitt.
 Offene Module bis Sem 7. Archiv & Nachweise. Navigation neu strukturiert.
