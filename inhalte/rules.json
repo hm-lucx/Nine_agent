@@ -1,0 +1,69 @@
+{
+  "source_priority": [
+    "Datenbank_Semestergruppen_TEC.pdf für Verfügbarkeit und Termine",
+    "09_wib_aktuell_spo.pdf für rechtliche Regeln und Vorrücken",
+    "Studienplan_WI_B(1).pdf für Modulstruktur und Moduldetails"
+  ],
+  "global_rules": {
+    "normal_modules": {
+      "requires_offered_in_master_file": true,
+      "requires_progression_rule": true,
+      "avoid_time_conflicts": true,
+      "respect_blocked_days": true
+    },
+    "wpm": {
+      "general_release": true,
+      "requires_offered_in_master_file": true,
+      "requires_progression_rule": false,
+      "avoid_time_conflicts": true,
+      "respect_blocked_days": true
+    },
+    "aw": {
+      "general_release": true,
+      "can_be_taken_from_semester": 1,
+      "counts_for_progression": false,
+      "requires_offered_in_master_file_or_aw_source": true,
+      "avoid_time_conflicts": true,
+      "respect_blocked_days": true
+    },
+    "planning_strategy": [
+      "semesterweise abschließen",
+      "zuerst offene Module aus dem niedrigsten nicht abgeschlossenen Semester",
+      "danach erlaubte Module aus höheren Semestern",
+      "danach WPM",
+      "danach AW",
+      "ca. 30 ECTS anstreben, aber Regeln und Semesterabschluss priorisieren"
+    ]
+  },
+  "progression_rules": {
+    "gop_first_attempt_by_end_second_semester": [
+      "Mathematik I",
+      "Grundlagen der Informatik",
+      "Technische Mechanik"
+    ],
+    "third_semester_allowed_if": {
+      "mathematics_i_passed": true,
+      "additional_passed_modules_from_sem_1_2_min": 8,
+      "total_passed_modules_from_sem_1_2_min_including_math_i": 9
+    },
+    "fourth_semester_allowed_if": {
+      "all_modules_sem_1_2_passed": true,
+      "exception": {
+        "missing_modules_max": 1,
+        "missing_module_exam_attempted_at_least_twice": true
+      }
+    }
+  },
+  "selection_strategy": {
+    "primary_rule": "semesterweise abschließen",
+    "blocked_days": [
+      "Montag",
+      "Freitag"
+    ],
+    "target_ects": "ca. 30",
+    "wpm_general_release": true,
+    "aw_general_release": true,
+    "normal_modules_require_progression": true,
+    "normal_modules_require_master_availability": true
+  }
+}

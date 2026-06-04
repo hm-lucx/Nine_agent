@@ -1,0 +1,74 @@
+{
+  "note": "Beispiel unter Beachtung Montag/Freitag gesperrt und Semesterweise-Abschluss-Prämisse.",
+  "total_ects_approx": 29,
+  "modules": [
+    {
+      "module": "Physik",
+      "type": "Pflichtmodul",
+      "semester": 2,
+      "day": "Donnerstag",
+      "time": "11:45-15:00",
+      "ects": 5,
+      "reason": "offenes Modul aus niedrigstem nicht abgeschlossenem Semester"
+    },
+    {
+      "module": "Volkswirtschaftslehre",
+      "type": "Pflichtmodul",
+      "semester": 2,
+      "day": "Donnerstag",
+      "time": "16:00-19:30",
+      "ects": 4,
+      "reason": "offenes Modul aus niedrigstem nicht abgeschlossenem Semester"
+    },
+    {
+      "module": "Energietechnik",
+      "type": "Pflichtmodul Studienrichtung TEC",
+      "semester": 3,
+      "day": "Dienstag",
+      "time": "08:45-12:00",
+      "ects": 4,
+      "reason": "3. Semester erlaubt; keine Kollision; nicht Montag/Freitag"
+    },
+    {
+      "module": "Verfahrens- und Umwelttechnik",
+      "type": "Pflichtmodul Studienrichtung TEC",
+      "semester": 3,
+      "day": "Mittwoch",
+      "time": "08:15-11:30",
+      "ects": 4,
+      "reason": "3. Semester erlaubt; keine Kollision; nicht Montag/Freitag"
+    },
+    {
+      "module": "WPM Fachsprache B Spanisch",
+      "type": "WPM",
+      "day": "Mittwoch",
+      "time": "13:30-16:45",
+      "ects": 4,
+      "reason": "WPM allgemein freigegeben; verfügbar; keine Kollision"
+    },
+    {
+      "module": "WPM Lieferantenmanagement",
+      "type": "WPM",
+      "day": "Samstag/Sonntag",
+      "time": "Sa 09:00-17:00, So 09:00-14:00",
+      "ects": 4,
+      "reason": "WPM allgemein freigegeben; verfügbar; keine Kollision"
+    },
+    {
+      "module": "Human Factors Engineering",
+      "type": "AW",
+      "day": "Dienstag",
+      "time": "13:30-16:45",
+      "ects": 2,
+      "reason": "AW allgemein freigegeben; Beispielteil für W1"
+    },
+    {
+      "module": "Vorträge - AICA Lectures / Design im Zeughaus",
+      "type": "AW",
+      "day": "Dienstag",
+      "time": "17:00-18:00",
+      "ects": 2,
+      "reason": "AW allgemein freigegeben; Beispielteil für W1"
+    }
+  ]
+}

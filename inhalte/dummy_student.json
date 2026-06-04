@@ -1,0 +1,111 @@
+{
+  "student_id": "WI20260037",
+  "first_name": "Jonas",
+  "last_name": "Weber",
+  "program": "Bachelor Wirtschaftsingenieurwesen",
+  "track": "Industrielle Technik / TEC",
+  "semester_context": "SoSe 2026",
+  "blocked_days": [
+    "Montag",
+    "Freitag"
+  ],
+  "passed_modules": [
+    {
+      "code": "G1",
+      "module": "Mathematik I",
+      "semester": 1,
+      "ects": 6,
+      "status": "bestanden"
+    },
+    {
+      "code": "G3",
+      "module": "Technische Mechanik",
+      "semester": 1,
+      "ects": 5,
+      "status": "bestanden"
+    },
+    {
+      "code": "G5",
+      "module": "Chemie und Werkstoffe",
+      "semester": 1,
+      "ects": 4,
+      "status": "bestanden"
+    },
+    {
+      "code": "G8",
+      "module": "Technisches Zeichnen",
+      "semester": 1,
+      "ects": 4,
+      "status": "bestanden"
+    },
+    {
+      "code": "G10",
+      "module": "Betriebswirtschaftslehre",
+      "semester": 1,
+      "ects": 4,
+      "status": "bestanden"
+    },
+    {
+      "code": "G12",
+      "module": "Grundlagen der Informatik",
+      "semester": 1,
+      "ects": 5,
+      "status": "bestanden"
+    },
+    {
+      "code": "G2",
+      "module": "Mathematik II",
+      "semester": 2,
+      "ects": 5,
+      "status": "bestanden"
+    },
+    {
+      "code": "G7",
+      "module": "Elektrotechnik",
+      "semester": 2,
+      "ects": 5,
+      "status": "bestanden"
+    },
+    {
+      "code": "G11",
+      "module": "Buchführung und Bilanzierung",
+      "semester": 2,
+      "ects": 4,
+      "status": "bestanden"
+    }
+  ],
+  "passed_ects": 42,
+  "open_modules_lowest_unfinished_semester": [
+    {
+      "code": "G4",
+      "module": "Physik",
+      "semester": 2,
+      "ects": 5
+    },
+    {
+      "code": "G6",
+      "module": "Werkstofftechnik",
+      "semester": 2,
+      "ects": 4
+    },
+    {
+      "code": "G9",
+      "module": "Maschinenelemente",
+      "semester": 2,
+      "ects": 5
+    },
+    {
+      "code": "G13",
+      "module": "Volkswirtschaftslehre",
+      "semester": 2,
+      "ects": 4
+    }
+  ],
+  "progression_status": {
+    "semester_1_completed": true,
+    "semester_2_completed": false,
+    "semester_3_allowed": true,
+    "semester_4_allowed": false,
+    "semester_4_block_reason": "Mehr als ein Modul aus Semester 1-2 offen."
+  }
+}

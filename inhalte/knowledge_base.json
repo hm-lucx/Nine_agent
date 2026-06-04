@@ -1,0 +1,939 @@
+{
+  "metadata": {
+    "name": "WIB_HM_Studienplanungs_Knowledge_Base",
+    "version": "1.0",
+    "created_for": "KI-Agent für Modulbelegung Dummy-Student",
+    "language": "de",
+    "semester_context": "SoSe 2026",
+    "primary_study_program": "Bachelor Wirtschaftsingenieurwesen",
+    "primary_track": "Industrielle Technik / TEC",
+    "source_files": [
+      {
+        "filename": "Studienplan_WI_B(1).pdf",
+        "purpose": "Studienverlauf, Modulhandbuch, Modulbeschreibungen, Semesterzuordnung, ECTS/SWS"
+      },
+      {
+        "filename": "09_wib_aktuell_spo.pdf",
+        "purpose": "Studien- und Prüfungsordnung, Vorrückungsregeln, AW-Regel, Prüfungsstruktur"
+      },
+      {
+        "filename": "Datenbank_Semestergruppen_TEC.pdf",
+        "purpose": "Master-Datei für tatsächliche Modulverfügbarkeit, Wochentage, Uhrzeiten, WPM, AW im SoSe 2026"
+      }
+    ]
+  },
+  "source_priority": [
+    "Datenbank_Semestergruppen_TEC.pdf für Verfügbarkeit und Termine",
+    "09_wib_aktuell_spo.pdf für rechtliche Regeln und Vorrücken",
+    "Studienplan_WI_B(1).pdf für Modulstruktur und Moduldetails"
+  ],
+  "global_rules": {
+    "normal_modules": {
+      "requires_offered_in_master_file": true,
+      "requires_progression_rule": true,
+      "avoid_time_conflicts": true,
+      "respect_blocked_days": true
+    },
+    "wpm": {
+      "general_release": true,
+      "requires_offered_in_master_file": true,
+      "requires_progression_rule": false,
+      "avoid_time_conflicts": true,
+      "respect_blocked_days": true
+    },
+    "aw": {
+      "general_release": true,
+      "can_be_taken_from_semester": 1,
+      "counts_for_progression": false,
+      "requires_offered_in_master_file_or_aw_source": true,
+      "avoid_time_conflicts": true,
+      "respect_blocked_days": true
+    },
+    "planning_strategy": [
+      "semesterweise abschließen",
+      "zuerst offene Module aus dem niedrigsten nicht abgeschlossenen Semester",
+      "danach erlaubte Module aus höheren Semestern",
+      "danach WPM",
+      "danach AW",
+      "ca. 30 ECTS anstreben, aber Regeln und Semesterabschluss priorisieren"
+    ]
+  },
+  "progression_rules": {
+    "gop_first_attempt_by_end_second_semester": [
+      "Mathematik I",
+      "Grundlagen der Informatik",
+      "Technische Mechanik"
+    ],
+    "third_semester_allowed_if": {
+      "mathematics_i_passed": true,
+      "additional_passed_modules_from_sem_1_2_min": 8,
+      "total_passed_modules_from_sem_1_2_min_including_math_i": 9
+    },
+    "fourth_semester_allowed_if": {
+      "all_modules_sem_1_2_passed": true,
+      "exception": {
+        "missing_modules_max": 1,
+        "missing_module_exam_attempted_at_least_twice": true
+      }
+    }
+  },
+  "dummy_student": {
+    "student_id": "WI20260037",
+    "first_name": "Jonas",
+    "last_name": "Weber",
+    "program": "Bachelor Wirtschaftsingenieurwesen",
+    "track": "Industrielle Technik / TEC",
+    "semester_context": "SoSe 2026",
+    "blocked_days": [
+      "Montag",
+      "Freitag"
+    ],
+    "passed_modules": [
+      {
+        "code": "G1",
+        "module": "Mathematik I",
+        "semester": 1,
+        "ects": 6,
+        "status": "bestanden"
+      },
+      {
+        "code": "G3",
+        "module": "Technische Mechanik",
+        "semester": 1,
+        "ects": 5,
+        "status": "bestanden"
+      },
+      {
+        "code": "G5",
+        "module": "Chemie und Werkstoffe",
+        "semester": 1,
+        "ects": 4,
+        "status": "bestanden"
+      },
+      {
+        "code": "G8",
+        "module": "Technisches Zeichnen",
+        "semester": 1,
+        "ects": 4,
+        "status": "bestanden"
+      },
+      {
+        "code": "G10",
+        "module": "Betriebswirtschaftslehre",
+        "semester": 1,
+        "ects": 4,
+        "status": "bestanden"
+      },
+      {
+        "code": "G12",
+        "module": "Grundlagen der Informatik",
+        "semester": 1,
+        "ects": 5,
+        "status": "bestanden"
+      },
+      {
+        "code": "G2",
+        "module": "Mathematik II",
+        "semester": 2,
+        "ects": 5,
+        "status": "bestanden"
+      },
+      {
+        "code": "G7",
+        "module": "Elektrotechnik",
+        "semester": 2,
+        "ects": 5,
+        "status": "bestanden"
+      },
+      {
+        "code": "G11",
+        "module": "Buchführung und Bilanzierung",
+        "semester": 2,
+        "ects": 4,
+        "status": "bestanden"
+      }
+    ],
+    "passed_ects": 42,
+    "open_modules_lowest_unfinished_semester": [
+      {
+        "code": "G4",
+        "module": "Physik",
+        "semester": 2,
+        "ects": 5
+      },
+      {
+        "code": "G6",
+        "module": "Werkstofftechnik",
+        "semester": 2,
+        "ects": 4
+      },
+      {
+        "code": "G9",
+        "module": "Maschinenelemente",
+        "semester": 2,
+        "ects": 5
+      },
+      {
+        "code": "G13",
+        "module": "Volkswirtschaftslehre",
+        "semester": 2,
+        "ects": 4
+      }
+    ],
+    "progression_status": {
+      "semester_1_completed": true,
+      "semester_2_completed": false,
+      "semester_3_allowed": true,
+      "semester_4_allowed": false,
+      "semester_4_block_reason": "Mehr als ein Modul aus Semester 1-2 offen."
+    }
+  },
+  "module_catalog_sem_1_2": [
+    {
+      "code": "G1",
+      "module": "Mathematik I",
+      "semester": 1,
+      "sws": 6,
+      "ects": 6
+    },
+    {
+      "code": "G3",
+      "module": "Technische Mechanik",
+      "semester": 1,
+      "sws": 4,
+      "ects": 5
+    },
+    {
+      "code": "G5",
+      "module": "Chemie und Werkstoffe",
+      "semester": 1,
+      "sws": 3,
+      "ects": 4
+    },
+    {
+      "code": "G8",
+      "module": "Technisches Zeichnen",
+      "semester": 1,
+      "sws": 3,
+      "ects": 4
+    },
+    {
+      "code": "G10",
+      "module": "Betriebswirtschaftslehre",
+      "semester": 1,
+      "sws": 4,
+      "ects": 4
+    },
+    {
+      "code": "G12",
+      "module": "Grundlagen der Informatik",
+      "semester": 1,
+      "sws": 4,
+      "ects": 5
+    },
+    {
+      "code": "G2",
+      "module": "Mathematik II",
+      "semester": 2,
+      "sws": 4,
+      "ects": 5
+    },
+    {
+      "code": "G4",
+      "module": "Physik",
+      "semester": 2,
+      "sws": 4,
+      "ects": 5
+    },
+    {
+      "code": "G6",
+      "module": "Werkstofftechnik",
+      "semester": 2,
+      "sws": 4,
+      "ects": 4
+    },
+    {
+      "code": "G7",
+      "module": "Elektrotechnik",
+      "semester": 2,
+      "sws": 4,
+      "ects": 5
+    },
+    {
+      "code": "G9",
+      "module": "Maschinenelemente",
+      "semester": 2,
+      "sws": 4,
+      "ects": 5
+    },
+    {
+      "code": "G11",
+      "module": "Buchführung und Bilanzierung",
+      "semester": 2,
+      "sws": 4,
+      "ects": 4
+    },
+    {
+      "code": "G13",
+      "module": "Volkswirtschaftslehre",
+      "semester": 2,
+      "sws": 4,
+      "ects": 4
+    }
+  ],
+  "availability_sos26_master_file": {
+    "semester_2_relevant_open_modules": [
+      {
+        "module": "Physik",
+        "group": "Wi:2A",
+        "day": "Donnerstag",
+        "time": "11:45-15:00",
+        "lecturer": "Rebhan",
+        "ects": 5,
+        "available_for_dummy": true
+      },
+      {
+        "module": "Volkswirtschaftslehre",
+        "group": "Wi:2A",
+        "day": "Donnerstag",
+        "time": "16:00-19:30",
+        "lecturer": "Maier",
+        "ects": 4,
+        "available_for_dummy": true
+      },
+      {
+        "module": "Werkstofftechnik",
+        "group": "Wi:2A",
+        "day": "Montag",
+        "time": "13:30-16:45",
+        "lecturer": "Raber",
+        "ects": 4,
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "Maschinenelemente 1",
+        "group": "Wi:2A",
+        "day": "Montag",
+        "time": "09:00-12:30",
+        "lecturer": "Däubel",
+        "ects": 5,
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      }
+    ],
+    "semester_3_tec_modules": [
+      {
+        "module": "Datenanalyse",
+        "groups": [
+          {
+            "group": "DA",
+            "day": "Montag",
+            "time": "09:00-12:30"
+          },
+          {
+            "group": "DA-G2",
+            "day": "Montag",
+            "time": "13:30-16:45/14:15-16:45"
+          }
+        ],
+        "lecturer": "Schott/Voelkmann",
+        "ects": 4,
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "Energietechnik",
+        "group": "EnTech",
+        "day": "Dienstag",
+        "time": "08:45-12:00",
+        "lecturer": "Mauerer",
+        "ects": 4,
+        "available_for_dummy": true
+      },
+      {
+        "module": "Grundlagen der Fertigungstechnik",
+        "groups": [
+          {
+            "group": "Grund FertTechn",
+            "day": "Donnerstag",
+            "time": "13:30-16:00"
+          },
+          {
+            "group": "Grund FertTechn-G2",
+            "day": "Donnerstag",
+            "time": "10:00-12:30"
+          }
+        ],
+        "lecturer": "Neri",
+        "ects": 4,
+        "available_for_dummy": "conditional",
+        "blocked_reason": "Kollidiert je nach Auswahl mit Physik oder anderen Prioritätsmodulen"
+      },
+      {
+        "module": "Informationssysteme TEC",
+        "group": "InfoSys-TEC",
+        "day": "Montag",
+        "time": "09:00-12:30",
+        "lecturer": "Franke",
+        "ects": 4,
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "Informationssysteme TEC/BIO",
+        "group": "InfoSysBioTec",
+        "day": "Donnerstag",
+        "time": "09:00-12:30",
+        "lecturer": "Franke",
+        "ects": 4,
+        "available_for_dummy": "conditional",
+        "blocked_reason": "Kollidiert mit Physik ab 11:45"
+      },
+      {
+        "module": "Kostenrechnung",
+        "groups": [
+          {
+            "group": "Kost",
+            "day": "Montag",
+            "time": "13:30-16:45"
+          },
+          {
+            "group": "Kost-G2",
+            "day": "Donnerstag",
+            "time": "13:30-16:45"
+          }
+        ],
+        "lecturer": "Krahe",
+        "ects": 4,
+        "available_for_dummy": "conditional",
+        "blocked_reason": "Montag gesperrt; Donnerstag kollidiert mit Physik/VWL"
+      },
+      {
+        "module": "Maschinenelemente 2",
+        "groups": [
+          {
+            "day": "Dienstag",
+            "time": "13:30-15:00"
+          },
+          {
+            "day": "Mittwoch",
+            "time": "12:30-14:15"
+          }
+        ],
+        "lecturer": "Hoffmann/Pflaum",
+        "ects": 5,
+        "available_for_dummy": false,
+        "blocked_reason": "Maschinenelemente 1 noch offen; fachlich nicht priorisieren"
+      },
+      {
+        "module": "Verfahrens- und Umwelttechnik",
+        "group": "VUT",
+        "day": "Mittwoch",
+        "time": "08:15-11:30",
+        "lecturer": "Huber",
+        "ects": 4,
+        "available_for_dummy": true
+      }
+    ],
+    "semester_4_modules_blocked_by_progression": [
+      "Automatisierung und Sensorik",
+      "Entwicklung und Konstruktion mit CAD",
+      "Ergonomie mit Praktikum",
+      "Fachsprache Englisch 1",
+      "Finanzierung und Investition",
+      "Marketing",
+      "Vertiefung der Fertigungstechnik"
+    ],
+    "wpm_offered": [
+      {
+        "module": "Aerodynamic Principles for Automotive Design",
+        "day": "Montag",
+        "time": "13:30-16:00",
+        "lecturer": "Brombach-Randall",
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "Chances and Risks of Sustainable Technologies",
+        "days_times": [
+          "Do 08:15-10:45",
+          "Do 17:00-19:00",
+          "Di 13:00-16:00",
+          "Di 16:00-18:00",
+          "Do 16:00-19:00"
+        ],
+        "lecturer": "Rebhan",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Cost Management at the interface of engineering and business",
+        "day": "Mittwoch",
+        "time": "08:15-10:45",
+        "lecturer": "Krahe, Schulz",
+        "available_for_dummy": "conditional",
+        "blocked_reason": "Kollidiert mit Verfahrens- und Umwelttechnik, wenn dieses belegt wird"
+      },
+      {
+        "module": "Digital Marketing Basics",
+        "day": "Dienstag",
+        "time": "11:45-14:15",
+        "lecturer": "Cornelius",
+        "available_for_dummy": "conditional",
+        "blocked_reason": "Kollidiert teilweise mit Energietechnik bis 12:00"
+      },
+      {
+        "module": "WPM Fachsprache B Französisch",
+        "day": "Montag",
+        "time": "08:15-11:30",
+        "lecturer": "Bresoli",
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "WPM Fachsprache B Spanisch",
+        "day": "Mittwoch",
+        "time": "13:30-16:45",
+        "lecturer": "Minera Reyna",
+        "available_for_dummy": true
+      },
+      {
+        "module": "Entwicklung einer Geschäftsidee",
+        "day": "Donnerstag",
+        "time": "13:30-16:00",
+        "lecturer": "Gillig",
+        "available_for_dummy": "conditional",
+        "blocked_reason": "Kollidiert mit Physik"
+      },
+      {
+        "module": "Industrie 4.0 Praktikum",
+        "day": "Montag",
+        "times": [
+          "09:00-11:30",
+          "16:30-19:00",
+          "09:00-13:00"
+        ],
+        "lecturer": "Glas, Meier, Bäck",
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "Lieferantenmanagement",
+        "days_times": [
+          "Sa 09:00-17:00",
+          "So 09:00-14:00"
+        ],
+        "lecturer": "Trumic",
+        "available_for_dummy": true
+      },
+      {
+        "module": "Methoden der Produktentwicklung aktiv anwenden",
+        "day": "Mittwoch",
+        "times": [
+          "11:45-14:15",
+          "11:00-13:30",
+          "12:00-14:30",
+          "11:00-12:00",
+          "12:00-13:00"
+        ],
+        "lecturer": "Günther",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Nachhaltiges Wirtschaften",
+        "days_times": [
+          "Sa 09:00-17:00",
+          "Fr 16:00-21:00",
+          "So 09:00-17:00"
+        ],
+        "lecturer": "Nabokin",
+        "available_for_dummy": "conditional",
+        "blocked_reason": "Enthält Freitag; nur nutzen, wenn Freitag ausnahmsweise erlaubt wird oder Terminblock ohne Freitag gilt"
+      },
+      {
+        "module": "Seminar on Renewable Energy for a Sustainable Future",
+        "day": "Montag",
+        "time": "15:15-17:30",
+        "lecturer": "Mauerer",
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "Verhandlungsführung",
+        "days_times": [
+          "Sa 09:00-17:00",
+          "So 09:00-14:00"
+        ],
+        "lecturer": "Trumic",
+        "available_for_dummy": true
+      },
+      {
+        "module": "Design Thinking and Human Centered Design",
+        "days_times": [
+          "Fr 16:00-21:00",
+          "Sa 09:00-17:00"
+        ],
+        "lecturer": "Maisch",
+        "available_for_dummy": false,
+        "blocked_reason": "Enthält Freitag"
+      },
+      {
+        "module": "Produktmanagement und B2B Vertrieb",
+        "day": "Dienstag",
+        "time": "17:45-21:15",
+        "lecturer": "Gabrysch",
+        "available_for_dummy": true
+      },
+      {
+        "module": "Strategic Business Simulation",
+        "day": "Mittwoch",
+        "time": "17:45-21:15",
+        "lecturer": "Gabrysch",
+        "available_for_dummy": true
+      }
+    ],
+    "aw_examples_offered": [
+      {
+        "module": "Intercultural Communication for Business",
+        "days_times": [
+          "Do 10:00-13:15",
+          "Fr 10:00-13:15",
+          "Mo 10:00-13:15",
+          "Di 10:00-13:15",
+          "Mi 10:00-13:15",
+          "Mo 14:00-17:15"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "European Competitiveness and Sustainable Growth",
+        "day": "Montag",
+        "time": "10:00-13:15",
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "Creative Problem Solving in Business",
+        "days_times": [
+          "Mo-Fr 09:00-17:00"
+        ],
+        "available_for_dummy": false,
+        "blocked_reason": "Enthält Montag und Freitag"
+      },
+      {
+        "module": "Brand Crisis Management",
+        "days_times": [
+          "Mo-Fr 08:15-17:00"
+        ],
+        "available_for_dummy": false,
+        "blocked_reason": "Enthält Montag und Freitag"
+      },
+      {
+        "module": "Companies in Transformation",
+        "day": "Dienstag",
+        "time": "08:15-11:30",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "European Economic Policy",
+        "day": "Donnerstag",
+        "time": "11:45-13:15",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Sports Economics",
+        "days_times": [
+          "Mo 09:00-16:00",
+          "Di 09:00-16:00",
+          "Mi 09:00-16:00"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Vorträge - AICA Lectures / Design im Zeughaus",
+        "day": "Dienstag",
+        "time": "17:00-18:00",
+        "available_for_dummy": true
+      },
+      {
+        "module": "Entrepreneurship: Digitalization",
+        "day": "Dienstag",
+        "times": [
+          "10:00-13:15",
+          "09:30-12:45"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Entrepreneurship: Real Project Planetary Health",
+        "days_times": [
+          "Mo-Sa 09:00-18:00"
+        ],
+        "available_for_dummy": false,
+        "blocked_reason": "Enthält Montag und Freitag"
+      },
+      {
+        "module": "Unternehmensführung (Corporate Strategy)",
+        "day": "Montag",
+        "time": "10:00-13:15",
+        "available_for_dummy": false,
+        "blocked_reason": "Montag ist Arbeitstag"
+      },
+      {
+        "module": "The Use of AI in Decision Making",
+        "days_times": [
+          "Mo-Fr 08:00-18:00"
+        ],
+        "available_for_dummy": false,
+        "blocked_reason": "Enthält Montag und Freitag"
+      },
+      {
+        "module": "Advanced Applied Mathematics",
+        "days_times": [
+          "Mi 08:15-11:30",
+          "Do 08:15-09:45"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Basics of Technical Mechanics",
+        "day": "Dienstag",
+        "time": "08:15-11:30",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Digital Process Management",
+        "day": "Mittwoch",
+        "time": "08:15-11:30",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Digital Business Models",
+        "day": "Freitag",
+        "time": "08:15-11:30",
+        "available_for_dummy": false,
+        "blocked_reason": "Freitag ist Arbeitstag"
+      },
+      {
+        "module": "Talentmanagement und Development",
+        "day": "Mittwoch",
+        "time": "15:45-19:00",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Human Factors Engineering",
+        "day": "Dienstag",
+        "time": "13:30-16:45",
+        "available_for_dummy": true
+      },
+      {
+        "module": "Global Leadership",
+        "days_times": [
+          "Mi 15:45-19:15",
+          "Do 15:45-19:15",
+          "Mo 15:45-19:15"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Going Global",
+        "day": "Freitag",
+        "time": "08:15-11:30",
+        "available_for_dummy": false,
+        "blocked_reason": "Freitag ist Arbeitstag"
+      },
+      {
+        "module": "Managing Innovation CiE",
+        "days_times": [
+          "Mi 08:15-11:30",
+          "Mi 09:30-11:30",
+          "Mi 09:00-11:00",
+          "Mi 09:00-17:00",
+          "Di 09:00-17:00",
+          "Mi 08:45-12:30"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Cross-cultural Management & Negotiation",
+        "days_times": [
+          "Do 17:15-20:30",
+          "Sa 09:00-18:00",
+          "Sa 09:00-13:00"
+        ],
+        "available_for_dummy": true
+      },
+      {
+        "module": "Elective II: International Marketing",
+        "days_times": [
+          "Mo-Fr 09:00-17:00"
+        ],
+        "available_for_dummy": false,
+        "blocked_reason": "Enthält Montag und Freitag"
+      },
+      {
+        "module": "International Management Accounting and Financial Reporting",
+        "day": "Dienstag",
+        "times": [
+          "10:00-13:15",
+          "11:00-13:15",
+          "10:15-13:15",
+          "10:30-13:15",
+          "10:15-13:00"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Innovation Management Konsek",
+        "day": "Dienstag",
+        "time": "13:30-16:00",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "International Markets and Circular Economy",
+        "day": "Donnerstag",
+        "time": "12:30-16:00",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Digital Technology: Strategy and Organization",
+        "day": "Freitag",
+        "times": [
+          "09:30-16:30",
+          "09:30-12:30",
+          "10:00-16:30",
+          "13:15-16:30"
+        ],
+        "available_for_dummy": false,
+        "blocked_reason": "Freitag ist Arbeitstag"
+      },
+      {
+        "module": "Design Thinking for Digital Technology Development",
+        "days_times": [
+          "Mo-Fr 09:00-17:00",
+          "Fr 14:00-15:30"
+        ],
+        "available_for_dummy": false,
+        "blocked_reason": "Enthält Montag und Freitag"
+      },
+      {
+        "module": "Economics of Digitization",
+        "day": "Donnerstag",
+        "time": "10:00-13:15",
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Research Project: Digital Business Development",
+        "day": "Dienstag",
+        "times": [
+          "10:00-13:15",
+          "09:00-15:00",
+          "10:00-11:30",
+          "09:30-10:30"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Marketing and Sales, Automotive",
+        "day": "Dienstag",
+        "times": [
+          "14:15-17:45",
+          "14:00-17:30"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "Angewandtes Recht in der Digitalisierung / CiE Applied Law in Digitalization",
+        "day": "Dienstag",
+        "times": [
+          "08:30-11:30",
+          "09:00-11:00"
+        ],
+        "available_for_dummy": "conditional"
+      },
+      {
+        "module": "CiE Law: Leadership by Law",
+        "day": "Mittwoch",
+        "times": [
+          "10:00-13:15",
+          "11:30-15:00"
+        ],
+        "available_for_dummy": "conditional"
+      }
+    ]
+  },
+  "recommended_current_schedule_example": {
+    "note": "Beispiel unter Beachtung Montag/Freitag gesperrt und Semesterweise-Abschluss-Prämisse.",
+    "total_ects_approx": 29,
+    "modules": [
+      {
+        "module": "Physik",
+        "type": "Pflichtmodul",
+        "semester": 2,
+        "day": "Donnerstag",
+        "time": "11:45-15:00",
+        "ects": 5,
+        "reason": "offenes Modul aus niedrigstem nicht abgeschlossenem Semester"
+      },
+      {
+        "module": "Volkswirtschaftslehre",
+        "type": "Pflichtmodul",
+        "semester": 2,
+        "day": "Donnerstag",
+        "time": "16:00-19:30",
+        "ects": 4,
+        "reason": "offenes Modul aus niedrigstem nicht abgeschlossenem Semester"
+      },
+      {
+        "module": "Energietechnik",
+        "type": "Pflichtmodul Studienrichtung TEC",
+        "semester": 3,
+        "day": "Dienstag",
+        "time": "08:45-12:00",
+        "ects": 4,
+        "reason": "3. Semester erlaubt; keine Kollision; nicht Montag/Freitag"
+      },
+      {
+        "module": "Verfahrens- und Umwelttechnik",
+        "type": "Pflichtmodul Studienrichtung TEC",
+        "semester": 3,
+        "day": "Mittwoch",
+        "time": "08:15-11:30",
+        "ects": 4,
+        "reason": "3. Semester erlaubt; keine Kollision; nicht Montag/Freitag"
+      },
+      {
+        "module": "WPM Fachsprache B Spanisch",
+        "type": "WPM",
+        "day": "Mittwoch",
+        "time": "13:30-16:45",
+        "ects": 4,
+        "reason": "WPM allgemein freigegeben; verfügbar; keine Kollision"
+      },
+      {
+        "module": "WPM Lieferantenmanagement",
+        "type": "WPM",
+        "day": "Samstag/Sonntag",
+        "time": "Sa 09:00-17:00, So 09:00-14:00",
+        "ects": 4,
+        "reason": "WPM allgemein freigegeben; verfügbar; keine Kollision"
+      },
+      {
+        "module": "Human Factors Engineering",
+        "type": "AW",
+        "day": "Dienstag",
+        "time": "13:30-16:45",
+        "ects": 2,
+        "reason": "AW allgemein freigegeben; Beispielteil für W1"
+      },
+      {
+        "module": "Vorträge - AICA Lectures / Design im Zeughaus",
+        "type": "AW",
+        "day": "Dienstag",
+        "time": "17:00-18:00",
+        "ects": 2,
+        "reason": "AW allgemein freigegeben; Beispielteil für W1"
+      }
+    ]
+  }
+}
