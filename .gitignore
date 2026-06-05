@@ -1,0 +1,29 @@
+# Sensible Dateien – NIEMALS committen
+.env.local
+.env.*.local
+*.env.local
+
+# Notenblätter und Studierendendaten
+*.pdf
+*.csv
+*.xlsx
+*.xls
+inhalte/private/
+
+# Build-Outputs (temporär im Root)
+build-out*.txt
+dev-out*.txt
+tsc-out.txt
+
+# Node / Dependencies
+node_modules/
+hm-modulplaner/node_modules/
+
+# Build-Artifacts
+hm-modulplaner/dist/
+dist/
+
+# Editor
+.vscode/
+.idea/
+*.DS_Store
