@@ -1,0 +1,18 @@
+npm warn Unknown env config "devdir". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> hm-modulplaner@0.0.0 build
+> tsc -b && vite build
+
+src/components/Dashboard.tsx(25,48): error TS2339: Property 'nineApiData' does not exist on type 'AppContextValue'.
+src/components/Dashboard.tsx(63,63): error TS7006: Parameter 'c' implicitly has an 'any' type.
+src/components/Dashboard.tsx(248,67): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/components/NineApiStatus.tsx(6,36): error TS2339: Property 'nineApiData' does not exist on type 'AppContextValue'.
+src/components/NineApiStatus.tsx(72,67): error TS7006: Parameter 's' implicitly has an 'any' type.
+src/components/NineApiStatus.tsx(76,68): error TS7006: Parameter 'o' implicitly has an 'any' type.
+src/components/NineApiStatus.tsx(169,40): error TS7006: Parameter 'c' implicitly has an 'any' type.
+npm notice
+npm notice New minor version of npm available! 11.13.0 -> 11.16.0
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v11.16.0
+npm notice To update run: npm install -g npm@11.16.0
+npm notice
+BUILD_FAILED 

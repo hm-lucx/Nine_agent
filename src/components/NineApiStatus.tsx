@@ -1,154 +1,199 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import {
-  testNineConnection,
-  fetchModules,
-  isMockMode,
-  apiBaseUrl,
-  authConfigured,
-  type NineModule,
-} from '../services/nineApiService';
+import { testNineConnection, isMockMode, apiBaseUrl, authConfigured } from '../services/nineApiService';
 
 export default function NineApiStatus() {
-  const { apiStatus, setApiStatus } = useApp();
+  const { apiStatus, setApiStatus, nineReport, reloadNineData, isLoadingApi } = useApp();
   const [testing, setTesting] = useState(false);
-  const [mockModules, setMockModules] = useState<NineModule[]>([]);
-  const [loadingModules, setLoadingModules] = useState(false);
 
   const handleTest = async () => {
     setTesting(true);
-    const result = await testNineConnection();
-    setApiStatus(result);
-    setTesting(false);
+    try {
+      const result = await testNineConnection();
+      setApiStatus({ mode: result.mode, baseUrl: result.baseUrl, authConfigured: result.authConfigured, lastChecked: result.lastChecked, connected: result.connected, lastError: result.lastError });
+    } finally {
+      setTesting(false);
+    }
   };
 
-  const handleFetchModules = async () => {
-    setLoadingModules(true);
-    const mods = await fetchModules();
-    setMockModules(mods);
-    setLoadingModules(false);
+  const handleReload = async () => {
+    await reloadNineData();
   };
 
-  const modeColor = isMockMode ? 'badge-warn' : apiStatus.connected ? 'badge-ok' : 'badge-blocked';
-  const modeLabel = isMockMode ? 'Mock-Modus (keine echten Daten)' : apiStatus.connected ? 'Live API' : 'Live API – nicht verbunden';
+  const modeLabel = isMockMode ? 'Mock (keine echten API-Aufrufe)' : 'Live (echte API)';
+  const modeClass = isMockMode ? 'badge-warn' : 'badge-ok';
 
   return (
     <div className="page">
       <h1>NINE API Status</h1>
       <p className="source-note">
-        Swagger UI:{' '}
-        <a href="https://nine.hm.edu/swagger/ui/index" target="_blank" rel="noopener noreferrer">
-          https://nine.hm.edu/swagger/ui/index
-        </a>
-        {' '}· Konfiguration über <code>.env.local</code>
+        Swagger: <a href="https://nine.hm.edu/swagger/ui/index" target="_blank" rel="noopener noreferrer">https://nine.hm.edu/swagger/ui/index</a> ·
+        Docs: <code>GET https://nine.hm.edu/swagger/docs/v2</code>
       </p>
 
-      <div className="card-grid" style={{ marginBottom: '1.5rem' }}>
+      {/* Status-Karten */}
+      <div className="card-grid">
         <div className="card">
-          <div className="card-label">API Base URL</div>
-          <div className="card-value" style={{ fontSize: '0.82rem' }}>{apiBaseUrl}</div>
+          <div className="card-label">Base URL</div>
+          <div className="card-value" style={{ fontSize: '0.85rem' }}>{apiBaseUrl}</div>
         </div>
         <div className="card">
           <div className="card-label">Modus</div>
-          <div className="card-value">
-            <span className={`badge ${modeColor}`}>{modeLabel}</span>
-          </div>
+          <div className="card-value"><span className={`badge ${modeClass}`}>{modeLabel}</span></div>
         </div>
         <div className="card">
-          <div className="card-label">Auth konfiguriert</div>
+          <div className="card-label">Auth-Token</div>
           <div className="card-value">
             <span className={`badge ${authConfigured ? 'badge-ok' : 'badge-warn'}`}>
-              {authConfigured ? 'Ja (Token vorhanden)' : 'Nein (kein Token)'}
+              {authConfigured ? '✓ Konfiguriert (VITE_NINE_API_TOKEN)' : '✗ Nicht gesetzt'}
             </span>
           </div>
         </div>
         <div className="card">
           <div className="card-label">Verbindung</div>
           <div className="card-value">
-            <span className={`badge ${apiStatus.connected ? 'badge-ok' : 'badge-warn'}`}>
-              {apiStatus.connected ? '✓ Verbunden' : 'Nicht geprüft'}
+            <span className={`badge ${apiStatus.connected ? 'badge-ok' : 'badge-blocked'}`}>
+              {apiStatus.connected ? '✓ Verbunden' : '✗ Nicht verbunden'}
             </span>
           </div>
         </div>
         <div className="card">
-          <div className="card-label">Letzter Abruf</div>
-          <div className="card-value" style={{ fontSize: '0.82rem' }}>
+          <div className="card-label">Letzter Check</div>
+          <div className="card-value" style={{ fontSize: '0.85rem' }}>
             {apiStatus.lastChecked ? new Date(apiStatus.lastChecked).toLocaleString('de-DE') : '–'}
           </div>
         </div>
+        <div className="card">
+          <div className="card-label">Geladene Module</div>
+          <div className="card-value highlight">{nineReport?.totalModules ?? 0}</div>
+        </div>
+        <div className="card">
+          <div className="card-label">Semester in API</div>
+          <div className="card-value">{nineReport?.semesters.length ?? 0}</div>
+        </div>
+        <div className="card">
+          <div className="card-label">Organisationen</div>
+          <div className="card-value">{nineReport?.organisers.map(o => o.name).slice(0, 3).join(', ') || '–'}</div>
+        </div>
       </div>
 
-      {apiStatus.lastError && (
-        <div className="assumption-note">
-          <strong>Fehler:</strong> {apiStatus.lastError}
+      {/* Fehlermeldung */}
+      {(apiStatus.lastError || nineReport?.corsBlocked) && (
+        <div className="assumption-note" style={{ borderColor: '#dc2626', marginTop: '1rem' }}>
+          <strong>Fehler:</strong> {apiStatus.lastError ?? '–'}<br />
+          {nineReport?.corsBlocked && (
+            <span>
+              <strong>CORS-Blocker erkannt:</strong> Direkte Browser-Anfragen zu nine.hm.edu werden blockiert.
+              Lösungsoptionen: (1) Lokalen Proxy einrichten, (2) Browser-CORS-Extension für Entwicklung,
+              (3) Mock-Modus verwenden (<code>VITE_NINE_API_MODE=mock</code>).
+            </span>
+          )}
         </div>
       )}
 
-      <div className="params-actions" style={{ marginBottom: '1.5rem' }}>
+      {/* Buttons */}
+      <div className="params-actions" style={{ marginTop: '1.5rem' }}>
         <button className="btn-primary" onClick={handleTest} disabled={testing}>
-          {testing ? 'Teste Verbindung…' : 'API-Verbindung testen'}
+          {testing ? '⟳ Teste Verbindung…' : 'API-Verbindung testen'}
         </button>
-        <button className="btn-secondary" onClick={handleFetchModules} disabled={loadingModules}>
-          {loadingModules ? 'Lade Module…' : 'Module abrufen (Test)'}
+        <button className="btn-secondary" onClick={handleReload} disabled={isLoadingApi}>
+          {isLoadingApi ? '⟳ Lade Modulangebote…' : '⟳ Modulangebote neu laden'}
         </button>
       </div>
 
-      {/* Verfügbare Endpunkte (geplant) */}
-      <h2>Geplante API-Funktionen</h2>
+      {/* NINE API v2 Endpoints */}
+      <h2 style={{ marginTop: '2rem' }}>Implementierte Endpunkte (v2)</h2>
       <table>
         <thead>
-          <tr><th>Funktion</th><th>Endpoint (TODO)</th><th>Beschreibung</th><th>Status</th></tr>
+          <tr><th>Endpoint</th><th>Beschreibung</th><th>Auth</th><th>Status</th></tr>
         </thead>
         <tbody>
-          {[
-            ['testNineConnection()', '/api/v1/ping', 'Verbindungstest', 'TODO: Endpoint prüfen'],
-            ['fetchModules()', '/api/v1/modules', 'Alle Module abrufen', 'TODO: Endpoint prüfen'],
-            ['fetchCurricula()', '/api/v1/curricula', 'Studiengänge abrufen', 'TODO: Endpoint prüfen'],
-            ['fetchCourses()', '/api/v1/courses', 'Veranstaltungen abrufen', 'TODO: Endpoint prüfen'],
-            ['fetchScheduleEntries()', '/api/v1/schedule', 'Stundenplaneinträge', 'TODO: Endpoint prüfen'],
-            ['fetchRooms()', '/api/v1/rooms', 'Räume abrufen', 'TODO: Endpoint prüfen'],
-            ['fetchStudyPrograms()', '/api/v1/studyprograms', 'Studienprogramme', 'TODO: Endpoint prüfen'],
-          ].map(([fn, ep, desc, status]) => (
-            <tr key={fn}>
-              <td><code>{fn}</code></td>
-              <td><code style={{ color: '#7b1fa2' }}>{ep}</code></td>
-              <td>{desc}</td>
-              <td><span className="badge badge-warn">{status}</span></td>
-            </tr>
-          ))}
+          <tr>
+            <td><code>GET /api/v2/semester</code></td>
+            <td>Liste aller Semester</td>
+            <td>–</td>
+            <td><span className="badge badge-ok">✓ implementiert</span></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/v2/organisers</code></td>
+            <td>Liste aller Organisationen/Fakultäten</td>
+            <td>–</td>
+            <td><span className="badge badge-ok">✓ implementiert</span></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/v2/courses?institutionId=&amp;semesterId=</code></td>
+            <td>Lehrveranstaltungen (institutionId erforderlich)</td>
+            <td>VITE_NINE_API_INSTITUTION</td>
+            <td><span className="badge badge-warn">✓ implementiert (INST-ID benötigt)</span></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/v2/curricula?institutionId=</code></td>
+            <td>Studiengänge / Prüfungsordnungen</td>
+            <td>VITE_NINE_API_INSTITUTION</td>
+            <td><span className="badge badge-warn">✓ implementiert (INST-ID benötigt)</span></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/v2/rooms</code></td>
+            <td>Alle Räume</td>
+            <td>–</td>
+            <td><span className="badge badge-ok">✓ implementiert</span></td>
+          </tr>
+          <tr>
+            <td><code>GET /api/v2/modules/{'{curriculum}/{stage}/{semester}'}</code></td>
+            <td>Module nach Studiengang und Semester</td>
+            <td>–</td>
+            <td><span className="badge badge-warn">✓ implementiert (Parameter nötig)</span></td>
+          </tr>
+          <tr>
+            <td><code>POST /api/v2/account/login</code></td>
+            <td>Anmeldung (Token-Erstellung)</td>
+            <td>userName + password</td>
+            <td><span className="badge badge-code">vorbereitet (kein Klartext-Auth)</span></td>
+          </tr>
         </tbody>
       </table>
 
-      {/* Mock-Module */}
-      {mockModules.length > 0 && (
+      {/* Geladene Module */}
+      {nineReport && nineReport.totalModules > 0 && (
         <>
-          <h2 style={{ marginTop: '1.5rem' }}>Zuletzt abgerufene Module ({isMockMode ? 'Mock' : 'Live'})</h2>
+          <h2>Geladene Module</h2>
+          <p className="source-note">
+            Modus: <span className={`badge ${nineReport.corsBlocked ? 'badge-blocked' : 'badge-ok'}`}>{nineReport.corsBlocked ? 'CORS blockiert' : 'live'}</span>
+            &nbsp;· {nineReport.totalModules} Module, {nineReport.modulesWithSchedule} mit Terminen
+          </p>
           <table>
             <thead>
-              <tr><th>ID</th><th>Code</th><th>Titel</th><th>ECTS</th><th>Semester</th></tr>
+              <tr><th>Stage</th><th>Tag</th><th>Modul</th><th>Mit Terminen</th></tr>
             </thead>
             <tbody>
-              {mockModules.map(m => (
-                <tr key={m.id}>
-                  <td>{m.id}</td>
-                  <td><span className="badge badge-code">{m.code}</span></td>
-                  <td>{m.title}</td>
-                  <td>{m.ects}</td>
-                  <td>{m.semester ?? '–'}</td>
-                </tr>
-              ))}
+              {Object.entries(nineReport.modulesByStage).flatMap(([stage, mods]) => {
+                const seen = new Set<string>();
+                return mods.filter(m => { if (seen.has(m.moduleTag)) return false; seen.add(m.moduleTag); return true; })
+                  .map(m => (
+                  <tr key={m.id}>
+                    <td>{stage}</td>
+                    <td><span className="badge badge-code">{m.moduleTag}</span></td>
+                    <td>{m.moduleName}</td>
+                    <td>{m.hasSchedule ? <span className="badge badge-ok">✓</span> : '–'}</td>
+                  </tr>
+                ));
+              })}
             </tbody>
           </table>
         </>
       )}
 
-      <div className="info-box" style={{ marginTop: '1.5rem' }}>
-        <strong>Konfiguration:</strong> Erstelle <code>.env.local</code> auf Basis von{' '}
-        <code>.env.example</code> und trage <code>VITE_NINE_API_BASE_URL</code> und optionalen{' '}
-        <code>VITE_NINE_API_TOKEN</code> ein. Setze <code>VITE_NINE_API_MOCK=false</code> für echte Aufrufe.
-        <br /><br />
-        <strong>CORS-Hinweis:</strong> Direkte Browser-Aufrufe zu <code>nine.hm.edu</code> können durch
-        CORS-Richtlinien blockiert werden. Falls nötig, ist ein lokaler Proxy-Server erforderlich.
+      <div className="info-box" style={{ marginTop: '2rem' }}>
+        <strong>Konfiguration (.env.local):</strong>
+        <pre style={{ margin: '0.5rem 0 0', fontSize: '0.82rem', whiteSpace: 'pre-wrap' }}>
+{`VITE_NINE_API_BASE_URL=https://nine.hm.edu
+VITE_NINE_API_MODE=mock          # "live" für echte API
+VITE_NINE_API_INSTITUTION=       # Institution-ID aus /api/v2/organisers
+VITE_NINE_API_ORGANISER=         # Organiser-ID (optional)
+VITE_NINE_API_TOKEN=             # Bearer-Token (nach Login)`}
+        </pre>
+        <strong>CORS-Hinweis:</strong> Im Browser-Modus können Anfragen zu nine.hm.edu durch
+        CORS-Richtlinien blockiert werden. Bei CORS-Fehler Mock-Modus verwenden.
       </div>
     </div>
   );

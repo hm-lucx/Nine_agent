@@ -1,282 +1,279 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useApp } from '../context/AppContext';
 import type { PrimussImportData, PrimussModuleEntry } from '../types';
+import { parseFile, parseTxtContent } from '../services/primussImportService';
+import type { ImportedGradeEntry } from '../services/primussImportService';
 
-const SUPPORTED_FORMATS = ['JSON', 'CSV', 'TXT (Textkopie)', 'PDF (manuell)', 'Word (manuell)', 'Bild/Screenshot (manuell)'];
+const CONFIDENCE_BADGE: Record<string, string> = {
+  hoch: 'badge-ok', mittel: 'badge-warn', niedrig: 'badge-blocked',
+};
 
-function parseTextToPrimuss(text: string): { modules: PrimussModuleEntry[]; warnings: string[] } {
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  const modules: PrimussModuleEntry[] = [];
-  const warnings: string[] = [];
-
-  for (const line of lines) {
-    // Pattern: "Modulname, Note X,Y, N ECTS, bestanden/nicht bestanden"
-    const gradeMatch = line.match(/(\d+[,.]?\d*)\s*ECTS/i);
-    const noteMatch  = line.match(/Note\s+(\d+[,.]?\d+)/i);
-    const noteMatch2 = line.match(/\b([1-4][,.]?\d?)\b/);
-    const statusMatch = /(bestanden|nicht bestanden|offen)/i.exec(line);
-
-    const ects  = gradeMatch  ? parseFloat(gradeMatch[1].replace(',', '.'))  : undefined;
-    const grade = noteMatch   ? parseFloat(noteMatch[1].replace(',', '.'))
-                : noteMatch2  ? parseFloat(noteMatch2[1].replace(',', '.'))  : undefined;
-    const status = statusMatch
-      ? (statusMatch[1].toLowerCase() as PrimussModuleEntry['status'])
-      : 'unbekannt';
-
-    // Modulname: alles vor dem ersten Komma
-    const namePart = line.split(',')[0].trim();
-    if (namePart.length < 3) {
-      warnings.push(`Zeile konnte nicht geparst werden: "${line}"`);
-      continue;
-    }
-
-    modules.push({
-      module: namePart,
-      grade,
-      ects,
-      status,
-      confidence: (grade != null && ects != null) ? 'hoch' : 'mittel',
-      rawText: line,
-    });
-  }
-  return { modules, warnings };
-}
-
-function parseCsvToPrimuss(text: string): { modules: PrimussModuleEntry[]; warnings: string[] } {
-  const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-  const modules: PrimussModuleEntry[] = [];
-  const warnings: string[] = [];
-  if (lines.length === 0) return { modules, warnings };
-
-  const header = lines[0].toLowerCase().split(';').map(h => h.trim());
-  const colModule = header.findIndex(h => h.includes('modul') || h.includes('lv'));
-  const colGrade  = header.findIndex(h => h.includes('note') || h.includes('grade'));
-  const colEcts   = header.findIndex(h => h.includes('ects') || h.includes('lp'));
-  const colStatus = header.findIndex(h => h.includes('status') || h.includes('ergebnis'));
-
-  for (let i = 1; i < lines.length; i++) {
-    const cols = lines[i].split(';').map(c => c.trim().replace(/"/g, ''));
-    const moduleName = colModule >= 0 ? cols[colModule] : cols[0];
-    if (!moduleName || moduleName.length < 2) continue;
-
-    const grade  = colGrade >= 0  ? parseFloat(cols[colGrade].replace(',', '.'))  : undefined;
-    const ects   = colEcts >= 0   ? parseFloat(cols[colEcts].replace(',', '.'))   : undefined;
-    const rawStatus = colStatus >= 0 ? cols[colStatus].toLowerCase() : '';
-    const status: PrimussModuleEntry['status'] =
-      rawStatus.includes('bestand') ? 'bestanden' :
-      rawStatus.includes('nicht')   ? 'nicht bestanden' : 'unbekannt';
-
-    modules.push({ module: moduleName, grade: isNaN(grade!) ? undefined : grade, ects: isNaN(ects!) ? undefined : ects, status, confidence: 'mittel', rawText: lines[i] });
-  }
-
-  if (colModule < 0) warnings.push('Keine Modulname-Spalte erkannt. Erste Spalte wurde verwendet.');
-  return { modules, warnings };
-}
-
-function parseJsonToPrimuss(text: string): { modules: PrimussModuleEntry[]; warnings: string[] } {
-  const warnings: string[] = [];
-  try {
-    const data = JSON.parse(text);
-    const arr = Array.isArray(data) ? data : (data.modules ?? data.passed_modules ?? []);
-    const modules: PrimussModuleEntry[] = arr.map((m: Record<string, unknown>) => ({
-      module: String(m.module ?? m.title ?? m.name ?? ''),
-      code: m.code != null ? String(m.code) : undefined,
-      grade: m.grade != null ? Number(m.grade) : undefined,
-      ects: m.ects != null ? Number(m.ects) : undefined,
-      semester: m.semester != null ? Number(m.semester) : undefined,
-      status: String(m.status ?? 'unbekannt').toLowerCase() as PrimussModuleEntry['status'],
-      confidence: 'hoch' as const,
-      rawText: JSON.stringify(m),
-    }));
-    return { modules, warnings };
-  } catch (e) {
-    warnings.push(`JSON-Parse-Fehler: ${String(e)}`);
-    return { modules: [], warnings };
-  }
+function entryToModuleEntry(e: ImportedGradeEntry): PrimussModuleEntry {
+  return {
+    module: e.moduleTitle,
+    code: e.moduleCode ?? undefined,
+    grade: e.grade ?? undefined,
+    ects: e.ects ?? undefined,
+    status: e.status === 'angemeldet' ? 'offen' : e.status,
+    semester: e.semester ?? undefined,
+    confidence: e.confidence,
+    rawText: e.rawText,
+  };
 }
 
 export default function PrimussImport() {
-  const { primussImport, setPrimussImport, acceptPrimussImport } = useApp();
+  const { primussImport, setPrimussImport, acceptPrimussImport, recalculate } = useApp();
+  const [dragging, setDragging] = useState(false);
   const [textInput, setTextInput] = useState('');
-  const [dragOver, setDragOver] = useState(false);
+  const [parsing, setParsing] = useState(false);
+  const [parseError, setParseError] = useState<string | null>(null);
+  const [editIdx, setEditIdx] = useState<number | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  const handleFile = (file: File) => {
-    const ext = file.name.split('.').pop()?.toLowerCase() ?? '';
-    const isParseable = ['json', 'csv', 'txt'].includes(ext);
-
-    if (!isParseable) {
-      const data: PrimussImportData = {
+  const doImport = useCallback(async (file: File) => {
+    setParsing(true);
+    setParseError(null);
+    try {
+      const result = await parseFile(file);
+      const imp: PrimussImportData = {
         fileName: file.name,
-        fileType: file.type || ext,
+        fileType: result.detectedFormat,
         fileSize: file.size,
         importedAt: new Date().toISOString(),
-        mode: ext === 'pdf' ? 'pdf_manual' : ext === 'docx' ? 'word_manual' : 'image_manual',
-        modules: [],
-        parseWarnings: [`${ext.toUpperCase()}-Dateien können nicht automatisch ausgelesen werden. Manuelle Auswertung / späterer Parser erforderlich.`],
+        mode: result.detectedFormat === 'JSON' ? 'json'
+          : result.detectedFormat === 'CSV' ? 'csv'
+          : result.detectedFormat === 'PDF' ? 'pdf_manual'
+          : result.detectedFormat === 'XLSX' ? 'csv'
+          : 'text',
+        modules: result.entries.map(entryToModuleEntry),
+        rawContent: result.rawContent.slice(0, 4000),
+        parseWarnings: result.parseWarnings,
         status: 'parsed',
       };
-      setPrimussImport(data);
-      return;
+      setPrimussImport(imp);
+    } catch (e) {
+      setParseError(`Fehler: ${e}`);
+    } finally {
+      setParsing(false);
     }
+  }, [setPrimussImport]);
 
-    const reader = new FileReader();
-    reader.onload = e => {
-      const content = e.target?.result as string;
-      let parsed: { modules: PrimussModuleEntry[]; warnings: string[] };
-      let mode: PrimussImportData['mode'] = 'text';
+  const handleFile = useCallback(async (f: File) => {
+    await doImport(f);
+  }, [doImport]);
 
-      if (ext === 'json')      { parsed = parseJsonToPrimuss(content); mode = 'json'; }
-      else if (ext === 'csv')  { parsed = parseCsvToPrimuss(content);  mode = 'csv';  }
-      else                     { parsed = parseTextToPrimuss(content);  mode = 'text'; }
-
-      setPrimussImport({
-        fileName: file.name,
-        fileType: file.type || ext,
-        fileSize: file.size,
-        importedAt: new Date().toISOString(),
-        mode,
-        modules: parsed.modules,
-        rawContent: content.slice(0, 2000),
-        parseWarnings: parsed.warnings,
-        status: 'parsed',
-      });
-    };
-    reader.readAsText(file, 'UTF-8');
-  };
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    setDragging(false);
+    const f = e.dataTransfer.files[0];
+    if (f) handleFile(f);
+  }, [handleFile]);
 
   const handleTextParse = () => {
     if (!textInput.trim()) return;
-    const parsed = parseTextToPrimuss(textInput);
-    setPrimussImport({
+    const result = parseTxtContent(textInput, 'Manuell eingegeben');
+    const imp: PrimussImportData = {
+      fileName: 'Manuell eingegeben',
+      fileType: 'TXT',
       importedAt: new Date().toISOString(),
       mode: 'text',
-      modules: parsed.modules,
-      rawContent: textInput.slice(0, 2000),
-      parseWarnings: parsed.warnings,
+      modules: result.entries.map(entryToModuleEntry),
+      rawContent: textInput.slice(0, 4000),
+      parseWarnings: result.parseWarnings,
       status: 'parsed',
-    });
+    };
+    setPrimussImport(imp);
   };
 
-  const statusColor = primussImport?.status === 'accepted' ? 'badge-ok'
-    : primussImport?.status === 'rejected' ? 'badge-blocked'
-    : primussImport?.status === 'parsed'   ? 'badge-warn' : 'badge-code';
+  const handleAccept = () => {
+    acceptPrimussImport();
+    recalculate();
+  };
+
+  const handleReject = () => {
+    setPrimussImport(null);
+    setTextInput('');
+  };
+
+  const updateEntry = (idx: number, field: keyof PrimussModuleEntry, value: string | number | undefined) => {
+    if (!primussImport) return;
+    const modules = primussImport.modules.map((m, i) => i === idx ? { ...m, [field]: value } : m);
+    setPrimussImport({ ...primussImport, modules });
+  };
 
   return (
     <div className="page">
       <h1>PRIMUSS-Daten importieren</h1>
       <p className="source-note">
-        Keine sensiblen Daten werden an Server übertragen. Alles bleibt im Browser (localStorage).
+        Lade dein Notenblatt hoch oder füge den Text ein. Das System erkennt automatisch Module, Noten, ECTS und Status.
       </p>
 
-      {/* Unterstützte Formate */}
-      <div className="info-box" style={{ marginBottom: '1.25rem' }}>
-        <strong>Unterstützte Formate:</strong>{' '}
-        {SUPPORTED_FORMATS.map(f => (
-          <span key={f} className="badge badge-code" style={{ marginRight: 4 }}>{f}</span>
-        ))}
+      <div className="assumption-note">
+        <strong>Datenschutz:</strong> Dateien werden nur im Browser verarbeitet und nicht an Server übertragen.
+        Keine echten PRIMUSS-Dateien im Repository speichern.
       </div>
 
-      {/* Datei-Upload */}
+      {/* Upload Zone */}
       <div
-        className={`upload-zone ${dragOver ? 'upload-zone-active' : ''}`}
-        onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-        onDragLeave={() => setDragOver(false)}
-        onDrop={e => { e.preventDefault(); setDragOver(false); const f = e.dataTransfer.files[0]; if (f) handleFile(f); }}
+        className={`upload-zone ${dragging ? 'upload-zone-drag' : ''}`}
+        onDragOver={e => { e.preventDefault(); setDragging(true); }}
+        onDragLeave={() => setDragging(false)}
+        onDrop={handleDrop}
         onClick={() => fileRef.current?.click()}
       >
-        <input ref={fileRef} type="file" style={{ display: 'none' }}
-          accept=".json,.csv,.txt,.pdf,.docx,.png,.jpg"
-          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }} />
-        <div className="upload-icon">📂</div>
-        <div className="upload-label">Datei hierher ziehen oder klicken zum Auswählen</div>
-        <div className="upload-hint">JSON, CSV, TXT, PDF, Word, Bild</div>
+        <div className="upload-icon">⬆</div>
+        <div>
+          <strong>Datei hierher ziehen</strong> oder klicken zum Auswählen
+        </div>
+        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 4 }}>
+          Unterstützt: JSON · CSV · XLSX · TXT · PDF (Textextraktion) · Bilder (manuell)
+        </div>
+        <input
+          ref={fileRef} type="file"
+          accept=".json,.csv,.tsv,.txt,.xlsx,.xls,.pdf,.png,.jpg,.jpeg,.webp"
+          style={{ display: 'none' }}
+          onChange={e => { const f = e.target.files?.[0]; if (f) handleFile(f); }}
+        />
       </div>
 
-      {/* Texteingabe */}
-      <h2 style={{ marginTop: '1.5rem' }}>Oder: Text aus PRIMUSS einfügen</h2>
-      <p style={{ fontSize: '0.82rem', color: '#546e7a', marginBottom: '0.5rem' }}>
-        Beispiel: „Mathematik I, Note 2,3, 5 ECTS, bestanden"
+      {parsing && <div className="info-box">⟳ Datei wird analysiert…</div>}
+      {parseError && <div className="assumption-note" style={{ borderColor: '#dc2626' }}>{parseError}</div>}
+
+      {/* Manuelle Texteingabe */}
+      <h2>Oder: Text / Notenblatt einfügen</h2>
+      <p className="source-note">
+        Beispiele die erkannt werden:<br />
+        <code>Mathematik I 6 ECTS 2,3 bestanden</code><br />
+        <code>Physik, Note 3.0, 5 ECTS, bestanden</code><br />
+        <code>Informatik Grundlagen 5 ECTS bestanden</code><br />
+        <code>Werkstofftechnik nicht bestanden</code>
       </p>
       <textarea
         className="primuss-textarea"
-        rows={6}
-        placeholder={'Mathematik I, Note 2,3, 5 ECTS, bestanden\nElektrotechnik, Note 3,0, 5 ECTS, bestanden\nPhysik, 5 ECTS, offen'}
+        rows={8}
+        placeholder="Notenblatt-Zeilen einfügen..."
         value={textInput}
         onChange={e => setTextInput(e.target.value)}
       />
-      <button className="btn-primary" style={{ marginTop: '0.5rem' }} onClick={handleTextParse}>
-        Text parsen
+      <button className="btn-secondary" onClick={handleTextParse} disabled={!textInput.trim()}>
+        Text analysieren
       </button>
 
-      {/* Importvorschau */}
-      {primussImport && (
-        <div style={{ marginTop: '1.5rem' }}>
-          <h2>Importvorschau</h2>
-          <div className="card-grid" style={{ marginBottom: '1rem' }}>
-            {primussImport.fileName && (
-              <div className="card"><div className="card-label">Dateiname</div><div className="card-value">{primussImport.fileName}</div></div>
-            )}
-            <div className="card"><div className="card-label">Modus</div><div className="card-value">{primussImport.mode}</div></div>
-            <div className="card">
-              <div className="card-label">Status</div>
-              <div className="card-value">
-                <span className={`badge ${statusColor}`}>{primussImport.status}</span>
-              </div>
-            </div>
-            <div className="card"><div className="card-label">Erkannte Module</div><div className="card-value highlight">{primussImport.modules.length}</div></div>
-          </div>
+      {/* Import-Vorschau */}
+      {primussImport && primussImport.status !== 'rejected' && (
+        <div style={{ marginTop: '2rem' }}>
+          <h2>Import-Vorschau</h2>
+          <p className="source-note">
+            Datei: <strong>{primussImport.fileName}</strong> ·
+            Format: <strong>{primussImport.fileType}</strong> ·
+            {primussImport.fileSize ? ` Größe: ${Math.round(primussImport.fileSize / 1024)} KB ·` : ''}
+            {' '}{primussImport.modules.length} Einträge erkannt
+            {primussImport.status === 'accepted' && <span className="badge badge-ok" style={{ marginLeft: 8 }}>✓ Importiert</span>}
+          </p>
 
           {primussImport.parseWarnings.length > 0 && (
             <div className="assumption-note">
-              <strong>Parser-Warnungen:</strong>
-              <ul style={{ margin: '0.3rem 0 0', paddingLeft: '1.2rem' }}>
-                {primussImport.parseWarnings.map((w, i) => <li key={i}>{w}</li>)}
-              </ul>
+              {primussImport.parseWarnings.map((w, i) => <div key={i}>⚠ {w}</div>)}
             </div>
           )}
 
-          {primussImport.modules.length > 0 ? (
-            <table style={{ marginTop: '0.75rem' }}>
-              <thead>
-                <tr>
-                  <th>Modul</th><th>Code</th><th>Note</th><th>ECTS</th>
-                  <th>Semester</th><th>Status</th><th>Konfidenz</th><th>Rohtext</th>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Modul</th>
+                <th>Code</th>
+                <th>Note</th>
+                <th>ECTS</th>
+                <th>Status</th>
+                <th>Konfidenz</th>
+                <th>Warnungen</th>
+                <th>Bearbeiten</th>
+              </tr>
+            </thead>
+            <tbody>
+              {primussImport.modules.map((m, i) => (
+                <tr key={i}>
+                  <td>{i + 1}</td>
+                  <td>
+                    {editIdx === i
+                      ? <input type="text" value={m.module} onChange={e => updateEntry(i, 'module', e.target.value)} style={{ width: 160 }} />
+                      : m.module}
+                  </td>
+                  <td>
+                    {editIdx === i
+                      ? <input type="text" value={m.code ?? ''} onChange={e => updateEntry(i, 'code', e.target.value || undefined)} style={{ width: 80 }} />
+                      : <span className="badge badge-code">{m.code ?? '–'}</span>}
+                  </td>
+                  <td>
+                    {editIdx === i
+                      ? <input type="number" step="0.1" min="1" max="5" value={m.grade ?? ''} onChange={e => updateEntry(i, 'grade', e.target.value ? parseFloat(e.target.value) : undefined)} style={{ width: 60 }} />
+                      : m.grade != null ? m.grade.toFixed(1) : '–'}
+                  </td>
+                  <td>
+                    {editIdx === i
+                      ? <input type="number" min="1" max="10" value={m.ects ?? ''} onChange={e => updateEntry(i, 'ects', e.target.value ? parseInt(e.target.value) : undefined)} style={{ width: 50 }} />
+                      : m.ects ?? '–'}
+                  </td>
+                  <td>
+                    {editIdx === i
+                      ? (
+                        <select value={m.status} onChange={e => updateEntry(i, 'status', e.target.value as PrimussModuleEntry['status'])}>
+                          <option value="bestanden">bestanden</option>
+                          <option value="nicht bestanden">nicht bestanden</option>
+                          <option value="offen">offen</option>
+                          <option value="unbekannt">unbekannt</option>
+                        </select>
+                      )
+                      : <span className={`badge ${m.status === 'bestanden' ? 'badge-ok' : m.status === 'nicht bestanden' ? 'badge-blocked' : 'badge-warn'}`}>{m.status}</span>}
+                  </td>
+                  <td><span className={`badge ${CONFIDENCE_BADGE[m.confidence] ?? 'badge-code'}`}>{m.confidence}</span></td>
+                  <td style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                    {m.confidence === 'niedrig' ? '⚠ manuell prüfen' : '–'}
+                  </td>
+                  <td>
+                    {editIdx === i
+                      ? <button className="btn-secondary" style={{ padding: '0.15rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setEditIdx(null)}>✓</button>
+                      : <button className="btn-secondary" style={{ padding: '0.15rem 0.5rem', fontSize: '0.75rem' }} onClick={() => setEditIdx(i)}>✎</button>}
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {primussImport.modules.map((m, i) => (
-                  <tr key={i}>
-                    <td>{m.module}</td>
-                    <td>{m.code ?? '–'}</td>
-                    <td>{m.grade != null ? m.grade.toFixed(1) : <span className="badge badge-cond">–</span>}</td>
-                    <td>{m.ects ?? <span className="badge badge-cond">–</span>}</td>
-                    <td>{m.semester ?? '–'}</td>
-                    <td><span className={`badge ${m.status === 'bestanden' ? 'badge-ok' : m.status === 'nicht bestanden' ? 'badge-blocked' : 'badge-warn'}`}>{m.status}</span></td>
-                    <td><span className={`badge ${m.confidence === 'hoch' ? 'badge-ok' : 'badge-warn'}`}>{m.confidence}</span></td>
-                    <td style={{ fontSize: '0.72rem', maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis' }}>{m.rawText}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          ) : (
-            <div className="assumption-note">
-              Keine Module erkannt. Bei PDF/Word/Bild ist manuelle Auswertung erforderlich.
-            </div>
-          )}
+              ))}
+            </tbody>
+          </table>
 
           <div className="params-actions" style={{ marginTop: '1rem' }}>
-            {primussImport.modules.filter(m => m.status === 'bestanden').length > 0 && primussImport.status !== 'accepted' && (
-              <button className="btn-primary" onClick={acceptPrimussImport}>
-                Import übernehmen ({primussImport.modules.filter(m => m.status === 'bestanden').length} bestandene Module)
-              </button>
+            {primussImport.status !== 'accepted' ? (
+              <>
+                <button className="btn-primary" onClick={handleAccept}>
+                  ✓ Import übernehmen ({primussImport.modules.filter(m => m.status === 'bestanden').length} bestandene Module)
+                </button>
+                <button className="btn-secondary" onClick={handleReject}>
+                  Import verwerfen
+                </button>
+              </>
+            ) : (
+              <div className="info-box">
+                ✓ Import wurde übernommen. Bestandene Module wurden zu deinem Profil hinzugefügt und die Szenarien wurden neu berechnet.
+                <button className="btn-secondary" style={{ marginLeft: '1rem' }} onClick={handleReject}>
+                  Neuen Import starten
+                </button>
+              </div>
             )}
-            <button className="btn-secondary" onClick={() => setPrimussImport(null)}>
-              Import verwerfen
-            </button>
           </div>
         </div>
       )}
+
+      <div className="info-box" style={{ marginTop: '2rem' }}>
+        <strong>Unterstützte Formate im Detail:</strong>
+        <ul>
+          <li><strong>JSON</strong> – Array mit Feldern: module/title, code, grade, ects, status, semester</li>
+          <li><strong>CSV</strong> – Spalten: Modul, Note, ECTS, Status (Trennzeichen: ; , Tab)</li>
+          <li><strong>TXT</strong> – Zeilenweise, z. B. „Mathematik I 6 ECTS 2,3 bestanden"</li>
+          <li><strong>XLSX/XLS</strong> – Erste Tabelle wird als CSV interpretiert</li>
+          <li><strong>PDF</strong> – Textextraktion mit pdfjs-dist (Qualität abhängig vom PDF)</li>
+          <li><strong>Bilder/Screenshots</strong> – OCR noch nicht zuverlässig implementiert → als TXT/CSV exportieren</li>
+        </ul>
+      </div>
     </div>
   );
 }

@@ -489,6 +489,127 @@ tr:hover td { background: #fafafa; }
 /* ── Code inline ─────────────────────────────────────── */
 code { font-family: 'Consolas', monospace; background: #f0f0f0; padding: 1px 5px; border-radius: 3px; font-size: 0.82em; }
 
+/* ── Upload Zone Drag ────────────────────────────────── */
+.upload-zone-drag { border-color: #1a237e; background: #e8eaf6; }
+
+/* ── Semester Status Grid 7 ──────────────────────────── */
+.sem-status-grid-7 {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin: 0.75rem 0 1.5rem;
+}
+.sem-card { border-radius: 10px; padding: 0.85rem 0.75rem; text-align: center; border: 2px solid transparent; }
+.sem-name  { font-weight: 700; font-size: 0.88rem; margin-bottom: 2px; }
+.sem-icon  { font-size: 1.5rem; line-height: 1; margin: 2px 0; }
+.sem-label { font-size: 0.73rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; }
+.sem-progress { font-size: 0.7rem; opacity: 0.8; margin-top: 3px; }
+.sem-source { font-size: 0.65rem; opacity: 0.6; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sem-ok       { background: #dcfce7; border-color: #16a34a; color: #14532d; }
+.sem-partial  { background: #fef9c3; border-color: #ca8a04; color: #713f12; }
+.sem-current  { background: #dbeafe; border-color: #2563eb; color: #1e3a8a; }
+.sem-open     { background: #f1f5f9; border-color: #94a3b8; color: #334155; }
+.sem-blocked  { background: #fee2e2; border-color: #dc2626; color: #7f1d1d; }
+.sem-nodata   { background: #f5f5f4; border-color: #a8a29e; color: #44403c; }
+
+/* ── Scenario Cards ──────────────────────────────────── */
+.scenario-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1rem;
+  margin: 1rem 0 1.5rem;
+}
+.scenario-card {
+  border: 2px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.scenario-card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.1); }
+.scenario-card-active { box-shadow: 0 4px 16px rgba(0,0,0,0.15); }
+.scenario-card-header {
+  background: #e2e8f0;
+  padding: 0.6rem 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.scenario-card-active .scenario-card-header { color: #fff; }
+.scenario-badge { font-size: 0.7rem; font-weight: 700; background: rgba(255,255,255,0.25); padding: 2px 8px; border-radius: 10px; flex-shrink: 0; }
+.scenario-title { font-weight: 700; font-size: 0.88rem; flex: 1; }
+.scenario-active-badge { font-size: 0.68rem; background: rgba(255,255,255,0.3); padding: 1px 6px; border-radius: 8px; }
+.scenario-card-body { padding: 0.85rem; }
+.scenario-desc { font-size: 0.82rem; color: #475569; margin-bottom: 0.5rem; }
+.scenario-stats { display: flex; gap: 0.5rem; flex-wrap: wrap; font-size: 0.82rem; margin-bottom: 0.5rem; }
+.scenario-rationale { font-size: 0.78rem; color: #64748b; font-style: italic; margin-bottom: 0.5rem; }
+.scenario-days { display: flex; flex-wrap: wrap; gap: 4px; }
+.badge-day { background: #e0f2fe; color: #0369a1; }
+
+/* ── Scenario Tabs ───────────────────────────────────── */
+.scenario-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 2px solid #e2e8f0;
+  margin-bottom: 0;
+}
+.scenario-tab {
+  background: #f8fafc;
+  color: #475569;
+  border: none;
+  border-bottom: 3px solid transparent;
+  padding: 0.6rem 1.1rem;
+  font-size: 0.83rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: -2px;
+}
+.scenario-tab:hover { background: #e2e8f0; color: #1e3a8a; }
+.scenario-tab.active { background: #fff; color: #1e3a8a; border-bottom-color: #2563eb; }
+.scenario-detail {
+  border: 1px solid #e2e8f0;
+  border-top: none;
+  border-radius: 0 0 8px 8px;
+  padding: 1.25rem;
+  background: #fff;
+  margin-bottom: 1.5rem;
+  overflow-x: auto;
+}
+
+/* ── API Badge ───────────────────────────────────────── */
+.badge-api { background: #dbeafe; color: #1d4ed8; }
+
+/* ── Status warn ─────────────────────────────────────── */
+.status-warn { color: #ca8a04; font-weight: 600; }
+
+/* ── Info-Box ────────────────────────────────────────── */
+.info-box {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 6px;
+  padding: 0.75rem 1rem;
+  font-size: 0.82rem;
+  color: #1e3a8a;
+  margin-bottom: 0.75rem;
+}
+
+/* ── Diag Status Badges ───────────────────────────────── */
+.badge-ok      { background: #d1fae5; color: #065f46; }
+.badge-warn    { background: #fef3c7; color: #92400e; }
+.badge-blocked { background: #fee2e2; color: #991b1b; }
+.badge-code    { background: #f1f5f9; color: #475569; }
+.badge-pflicht { background: #ede9fe; color: #5b21b6; }
+
+/* ── Upload Zone Drag State ───────────────────────────── */
+.upload-zone-drag {
+  border-color: #2563eb !important;
+  background: #eff6ff !important;
+}
+
 /* ── Scrollbar ───────────────────────────────────────── */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }

@@ -1,23 +1,15 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useApp } from '../context/AppContext';
-import type { PlanningGoal } from '../types';
 
 const ALL_DAYS = ['Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag', 'Sonntag'];
 
-const GOAL_OPTIONS: { value: PlanningGoal; label: string }[] = [
-  { value: 'schnell_fertig',    label: 'Möglichst schnell fertig werden' },
-  { value: 'realistisch',       label: 'Realistischer Plan' },
-  { value: 'entspannt',         label: 'Entspannter Stundenplan' },
-  { value: 'notenschnitt',      label: 'Notenschnitt verbessern' },
-  { value: 'wpm_einbauen',      label: 'WPM einbauen' },
-  { value: 'aw_einbauen',       label: 'AW/Fakultät-13-Fach einbauen' },
-  { value: 'zertifikat_einbauen', label: 'Zertifikat einbauen' },
-];
-
 export default function PlanningParams() {
-  const { planningParams, updatePlanningParams, resetToDemo, isModified } = useApp();
+  const { planningParams, updatePlanningParams, resetToDemo, isModified, lastPlannerUpdate, recalculate } = useApp();
   const [local, setLocal] = useState({ ...planningParams });
   const [saved, setSaved] = useState(false);
+
+  // Bei externen Änderungen (z. B. Reset) lokalen State synchronisieren
+  useEffect(() => { setLocal({ ...planningParams }); }, [planningParams]);
 
   const toggleDay = (day: string) => {
     const next = local.blockedDays.includes(day)
@@ -26,37 +18,38 @@ export default function PlanningParams() {
     setLocal(p => ({ ...p, blockedDays: next }));
   };
 
-  const toggleGoal = (g: PlanningGoal) => {
-    const next = local.goals.includes(g)
-      ? local.goals.filter(x => x !== g)
-      : [...local.goals, g];
-    setLocal(p => ({ ...p, goals: next }));
-  };
-
   const handleApply = () => {
     updatePlanningParams({ ...local, dataLabel: 'manuell' });
+    recalculate();
     setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    setTimeout(() => setSaved(false), 2500);
   };
 
   const handleReset = () => {
     resetToDemo();
-    setLocal({ ...planningParams });
   };
+
+  const fmtDate = (iso: string | null) =>
+    iso ? new Date(iso).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '–';
 
   return (
     <div className="page">
       <h1>Planungsparameter</h1>
       <p className="source-note">
-        Änderungen werden im Browser-State gespeichert (localStorage).
-        {isModified && <span className="badge badge-warn" style={{ marginLeft: 8 }}>Angepasst</span>}
+        Änderungen werden im Browser-State gespeichert (localStorage).{' '}
+        {isModified && <span className="badge badge-warn">Angepasst</span>}
+        {lastPlannerUpdate && (
+          <span style={{ marginLeft: 8, color: 'var(--text-muted)' }}>
+            Letzte Neuberechnung: {fmtDate(lastPlannerUpdate)}
+          </span>
+        )}
       </p>
 
       <div className="params-grid">
         {/* Gesperrte Tage */}
         <div className="params-card">
           <h3>Gesperrte Wochentage</h3>
-          <p className="params-hint">Module an diesen Tagen werden nicht empfohlen.</p>
+          <p className="params-hint">Module an diesen Tagen werden nicht in Szenarien empfohlen.</p>
           <div className="day-checks">
             {ALL_DAYS.map(day => (
               <label key={day} className="day-check-label">
@@ -66,6 +59,9 @@ export default function PlanningParams() {
                   onChange={() => toggleDay(day)}
                 />
                 {day}
+                {local.blockedDays.includes(day) && (
+                  <span className="badge badge-blocked" style={{ marginLeft: 6, fontSize: '0.65rem' }}>gesperrt</span>
+                )}
               </label>
             ))}
           </div>
@@ -73,8 +69,8 @@ export default function PlanningParams() {
 
         {/* Arbeitszeiten */}
         <div className="params-card">
-          <h3>Arbeitszeiten</h3>
-          <p className="params-hint">Gesperrte Tage mit Uhrzeiten (optional).</p>
+          <h3>Arbeitszeiten (gesperrte Tage)</h3>
+          <p className="params-hint">Legt fest, wann du arbeitest – Überschneidungen werden in den Szenarien ausgeblendet.</p>
           {local.blockedDays.map(day => (
             <div key={day} className="worktime-row">
               <span className="worktime-day">{day}</span>
@@ -83,7 +79,10 @@ export default function PlanningParams() {
                 value={local.workingHours[day]?.start ?? '08:00'}
                 onChange={e => setLocal(p => ({
                   ...p,
-                  workingHours: { ...p.workingHours, [day]: { ...p.workingHours[day] ?? { start: '08:00', end: '18:00' }, start: e.target.value } }
+                  workingHours: {
+                    ...p.workingHours,
+                    [day]: { ...p.workingHours[day] ?? { start: '08:00', end: '18:00' }, start: e.target.value },
+                  },
                 }))}
               />
               <span>bis</span>
@@ -92,12 +91,15 @@ export default function PlanningParams() {
                 value={local.workingHours[day]?.end ?? '18:00'}
                 onChange={e => setLocal(p => ({
                   ...p,
-                  workingHours: { ...p.workingHours, [day]: { ...p.workingHours[day] ?? { start: '08:00', end: '18:00' }, end: e.target.value } }
+                  workingHours: {
+                    ...p.workingHours,
+                    [day]: { ...p.workingHours[day] ?? { start: '08:00', end: '18:00' }, end: e.target.value },
+                  },
                 }))}
               />
             </div>
           ))}
-          {local.blockedDays.length === 0 && <p className="params-hint">Keine gesperrten Tage.</p>}
+          {local.blockedDays.length === 0 && <p className="params-hint">Keine gesperrten Tage gewählt.</p>}
         </div>
 
         {/* ECTS-Ziel */}
@@ -107,8 +109,7 @@ export default function PlanningParams() {
             <label>
               Ziel-ECTS pro Semester
               <input
-                type="number"
-                min={5} max={40}
+                type="number" min={5} max={40}
                 value={local.targetEcts}
                 onChange={e => setLocal(p => ({ ...p, targetEcts: Number(e.target.value) }))}
               />
@@ -116,8 +117,7 @@ export default function PlanningParams() {
             <label>
               Maximale ECTS
               <input
-                type="number"
-                min={local.targetEcts} max={45}
+                type="number" min={local.targetEcts} max={45}
                 value={local.maxEcts}
                 onChange={e => setLocal(p => ({ ...p, maxEcts: Number(e.target.value) }))}
               />
@@ -132,8 +132,7 @@ export default function PlanningParams() {
             <label>
               Fachsemester
               <input
-                type="number"
-                min={1} max={7}
+                type="number" min={1} max={7}
                 value={local.currentSemester}
                 onChange={e => setLocal(p => ({ ...p, currentSemester: Number(e.target.value) }))}
               />
@@ -148,6 +147,7 @@ export default function PlanningParams() {
                 <option>WiSe 2026/27</option>
                 <option>SoSe 2027</option>
                 <option>WiSe 2027/28</option>
+                <option>SoSe 2028</option>
               </select>
             </label>
           </div>
@@ -164,41 +164,23 @@ export default function PlanningParams() {
           </label>
         </div>
 
-        {/* Module-Optionen */}
+        {/* Moduloptionen */}
         <div className="params-card">
           <h3>Moduloptionen</h3>
           <label className="day-check-label">
-            <input type="checkbox" checked={local.includeWPM}
-              onChange={e => setLocal(p => ({ ...p, includeWPM: e.target.checked }))} />
+            <input
+              type="checkbox" checked={local.includeWPM}
+              onChange={e => setLocal(p => ({ ...p, includeWPM: e.target.checked }))}
+            />
             WPM einplanen
           </label>
           <label className="day-check-label">
-            <input type="checkbox" checked={local.includeAW}
-              onChange={e => setLocal(p => ({ ...p, includeAW: e.target.checked }))} />
-            AW/Fakultät-13-Fächer einplanen
+            <input
+              type="checkbox" checked={local.includeAW}
+              onChange={e => setLocal(p => ({ ...p, includeAW: e.target.checked }))}
+            />
+            AW / Fakultät-13-Fächer einplanen
           </label>
-          <label className="day-check-label">
-            <input type="checkbox" checked={local.includeCertificates}
-              onChange={e => setLocal(p => ({ ...p, includeCertificates: e.target.checked }))} />
-            Zertifikate einplanen
-          </label>
-        </div>
-
-        {/* Planungsziele */}
-        <div className="params-card">
-          <h3>Planungsziele</h3>
-          <div className="day-checks">
-            {GOAL_OPTIONS.map(g => (
-              <label key={g.value} className="day-check-label">
-                <input
-                  type="checkbox"
-                  checked={local.goals.includes(g.value)}
-                  onChange={() => toggleGoal(g.value)}
-                />
-                {g.label}
-              </label>
-            ))}
-          </div>
         </div>
       </div>
 
@@ -207,14 +189,14 @@ export default function PlanningParams() {
           {saved ? '✓ Plan aktualisiert' : 'Plan aktualisieren'}
         </button>
         <button className="btn-secondary" onClick={handleReset}>
-          Zurücksetzen auf Dummy-Student
+          Zurücksetzen auf Demo-Student
         </button>
       </div>
 
       <div className="assumption-note" style={{ marginTop: '1.5rem' }}>
-        <strong>Sprint-3-Hinweis:</strong> Die Empfehlung berücksichtigt Änderungen an gesperrten
-        Tagen sofort. Vollautomatische Neuberechnung aller Randbedingungen folgt in Sprint 4.
-        Daten werden im Browser (localStorage) gespeichert – keine Serverübertragung.
+        <strong>Sprint 4:</strong> Nach „Plan aktualisieren" werden alle 4 Empfehlungsszenarien
+        sofort neu berechnet. Daten werden im Browser gespeichert – keine Serverübertragung.
+        Zertifikate-Option und Planungsziele wurden in Sprint 4 entfernt (waren redundant zu Szenarien).
       </div>
     </div>
   );

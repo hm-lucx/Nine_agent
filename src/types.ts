@@ -105,9 +105,19 @@ export interface WorkingHours {
   end: string;     // "17:00"
 }
 
+export interface AvailabilityBlock {
+  id: string;
+  day: string;           // "Montag" etc.
+  startTime: string;     // "08:00"
+  endTime: string;       // "13:00"
+  reason: 'Arbeit' | 'privat' | 'Pendeln' | 'sonstiges';
+  active: boolean;
+}
+
 export interface PlanningParams {
   blockedDays: string[];
   workingHours: Record<string, WorkingHours>;  // day -> hours
+  blockedTimeSlots: AvailabilityBlock[];        // stundenweise Sperrzeiten
   targetEcts: number;
   maxEcts: number;
   currentSemester: number;
@@ -116,7 +126,8 @@ export interface PlanningParams {
   goals: PlanningGoal[];
   includeWPM: boolean;
   includeAW: boolean;
-  includeCertificates: boolean;
+  /** @deprecated Sprint 4: Zertifikate-Option wurde entfernt */
+  includeCertificates?: boolean;
   dataLabel: DataLabel;
 }
 
